@@ -1,322 +1,104 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quota Tracker</title>
-
 <style>
-
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:system-ui,-apple-system,Segoe UI,Roboto;
-}
-
-body{
-background:linear-gradient(180deg,#0f172a,#020617);
-color:white;
-padding:18px;
-min-height:100vh;
-}
-
-.container{
-max-width:520px;
-margin:auto;
-}
-
-/* main card */
-
-.card{
-background:rgba(255,255,255,.05);
-backdrop-filter:blur(10px);
-border-radius:22px;
-padding:22px;
-margin-bottom:20px;
-border:1px solid rgba(255,255,255,.08);
-box-shadow:0 15px 40px rgba(0,0,0,.35);
-}
-
-.small{
-font-size:13px;
-opacity:.7;
-margin-bottom:4px;
-}
-
-.big{
-font-size:44px;
-font-weight:700;
-letter-spacing:-1px;
-}
-
-/* progress */
-
-.progress{
-height:10px;
-background:rgba(255,255,255,.08);
-border-radius:20px;
-overflow:hidden;
-margin-top:14px;
-}
-
-.bar{
-height:100%;
-background:linear-gradient(90deg,#22c55e,#4ade80);
-width:0%;
-}
-
-/* stats */
-
-.stats{
-margin-top:10px;
-font-size:14px;
-opacity:.8;
-}
-
-/* days grid */
-
-.grid{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:12px;
-}
-
-.day{
-background:rgba(255,255,255,.04);
-border-radius:16px;
-padding:14px;
-text-align:center;
-border:1px solid rgba(255,255,255,.06);
-}
-
-.day strong{
-font-size:20px;
-display:block;
-margin-top:4px;
-}
-
-/* prediction */
-
-.prediction{
-margin-top:12px;
-font-size:13px;
-opacity:.7;
-text-align:center;
-}
-
-/* editor */
-
-.editor{
-display:none;
-margin-top:30px;
-padding-top:20px;
-border-top:1px solid rgba(255,255,255,.1);
-}
-
-input{
-width:100%;
-padding:10px;
-margin-top:6px;
-margin-bottom:8px;
-border-radius:10px;
-border:none;
-background:#111827;
-color:white;
-}
-
-button{
-width:100%;
-padding:10px;
-margin-top:6px;
-border:none;
-border-radius:10px;
-background:#2563eb;
-color:white;
-font-size:14px;
-cursor:pointer;
-}
-
-.delete{
-background:#dc2626;
-}
-
-/* very faint admin button */
-
-.admin{
-margin-top:35px;
-text-align:center;
-font-size:10px;
-opacity:.12;
-cursor:pointer;
-user-select:none;
-}
-
-.admin:hover{
-opacity:.25;
-}
-
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;}
+body{background:linear-gradient(160deg,#0f172a,#020617);color:white;padding:20px;min-height:100vh;}
+.container{max-width:520px;margin:auto;}
+.card{background:rgba(255,255,255,.05);border-radius:22px;padding:24px;border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px);box-shadow:0 20px 40px rgba(0,0,0,.35);margin-bottom:20px;}
+.header{display:flex;align-items:center;gap:10px;font-size:14px;opacity:.8;margin-bottom:8px;}
+.big{font-size:46px;font-weight:700;letter-spacing:-1px;}
+.progress{height:12px;background:rgba(255,255,255,.08);border-radius:30px;overflow:hidden;margin-top:14px;}
+.bar{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);width:0%;}
+.stats{margin-top:10px;font-size:14px;opacity:.8;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.day{background:rgba(255,255,255,.04);border-radius:16px;padding:16px;text-align:center;border:1px solid rgba(255,255,255,.06);}
+.day .icon{font-size:20px;opacity:.8;}
+.day .label{font-size:13px;opacity:.7;}
+.day .value{font-size:20px;font-weight:600;margin-top:4px;}
+.prediction{margin-top:12px;font-size:13px;opacity:.7;text-align:center;}
 </style>
 </head>
-
 <body>
-
 <div class="container">
 
 <div class="card">
-
-<div class="small">Remaining Quota</div>
+<div class="header">📶 Remaining Quota</div>
 <div class="big" id="remaining"></div>
-
-<div class="progress">
-<div class="bar" id="bar"></div>
-</div>
-
-<div class="stats">
-Used: <span id="used"></span>
-</div>
-
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="stats">📊 Used: <span id="used"></span></div>
 <div class="prediction" id="prediction"></div>
-
 </div>
 
 <div class="grid" id="days"></div>
 
-<div class="admin" onclick="unlock()">admin</div>
-
-<div class="editor" id="editor">
-
-<h3 style="margin-bottom:10px">Edit Usage</h3>
-
-<input id="dayInput" placeholder="Day number">
-<input id="usageInput" placeholder="Usage (GB)">
-
-<button onclick="addOrUpdate()">Add / Update Day</button>
-
-<input id="deleteDay" placeholder="Day to delete">
-
-<button class="delete" onclick="deleteEntry()">Delete Day</button>
-
-</div>
-
 </div>
 
 <script>
+// ===== CONFIG =====
+const totalQuota = 140; // GB
+const startDate = "2026-03-01"; // YYYY-MM-DD
 
-/* CONFIG */
+// ===== DATA =====
+// Load from LocalStorage if exists
+let entries = JSON.parse(localStorage.getItem("quotaEntries")) || [
+  {day:1,usage:4.2},
+  {day:2,usage:3.8},
+  {day:3,usage:5.1}
+];
 
-const totalQuota = 120
-const password = "admineditor!"
+// save to LocalStorage
+function saveData(){
+  localStorage.setItem("quotaEntries", JSON.stringify(entries));
+}
 
-/* DATA */
-
-let entries = [
-{day:1,usage:4.2},
-{day:2,usage:5},
-{day:3,usage:7},
-{day:4,usage:8}
-]
-
-/* RENDER */
+// calculate current day number from start date
+function getCurrentDay(){
+  const start = new Date(startDate);
+  const today = new Date();
+  const diff = Math.floor((today - start)/(1000*60*60*24)) + 1;
+  return diff > 0 ? diff : 1;
+}
 
 function render(){
+  entries.sort((a,b)=>a.day-b.day);
 
-entries.sort((a,b)=>a.day-b.day)
+  const used = entries.reduce((a,b)=>a+b.usage,0);
+  const remaining = totalQuota - used;
 
-let used = entries.reduce((a,b)=>a+b.usage,0)
-let remaining = totalQuota - used
+  document.getElementById("remaining").innerText = remaining.toFixed(1)+" GB";
+  document.getElementById("used").innerText = used.toFixed(1)+" GB";
+  document.getElementById("bar").style.width = (used/totalQuota*100)+"%";
 
-document.getElementById("remaining").innerText =
-remaining.toFixed(1)+" GB"
+  const avg = used/entries.length;
+  const predicted = Math.round(entries.length + remaining/avg);
+  document.getElementById("prediction").innerText = "Estimated exhaustion day: "+predicted;
 
-document.getElementById("used").innerText =
-used.toFixed(1)+" GB"
+  const grid=document.getElementById("days");
+  grid.innerHTML="";
+  const currentDay = getCurrentDay();
 
-document.getElementById("bar").style.width =
-(used/totalQuota*100)+"%"
-
-let avg = used/entries.length
-let predicted = Math.round(entries.length + remaining/avg)
-
-document.getElementById("prediction").innerText =
-"Estimated exhaustion day: "+predicted
-
-let grid=document.getElementById("days")
-grid.innerHTML=""
-
-entries.forEach(e=>{
-
-let div=document.createElement("div")
-
-div.className="day"
-
-div.innerHTML=`
-Day ${e.day}
-<strong>${e.usage} GB</strong>
-`
-
-grid.appendChild(div)
-
-})
-
+  entries.forEach(e=>{
+    if(e.day<=currentDay){ // only show days up to today
+      const div=document.createElement("div");
+      div.className="day";
+      div.innerHTML=`
+        <div class="icon">📅</div>
+        <div class="label">Day ${e.day}</div>
+        <div class="value">${e.usage} GB</div>
+      `;
+      grid.appendChild(div);
+    }
+  });
 }
 
-/* ADMIN */
-
-function unlock(){
-
-let p=prompt("Password")
-
-if(p===password){
-
-document.getElementById("editor").style.display="block"
-
-}
-
-}
-
-/* ADD OR UPDATE */
-
-function addOrUpdate(){
-
-let day=parseInt(dayInput.value)
-let usage=parseFloat(usageInput.value)
-
-if(!day||!usage)return
-
-let existing=entries.find(e=>e.day===day)
-
-if(existing){
-
-existing.usage=usage
-
-}else{
-
-entries.push({day,usage})
-
-}
-
-render()
-
-}
-
-/* DELETE */
-
-function deleteEntry(){
-
-let d=parseInt(deleteDay.value)
-
-entries=entries.filter(e=>e.day!==d)
-
-render()
-
-}
-
-render()
-
+// render page
+render();
+saveData(); // ensure entries are stored
 </script>
 
 </body>
 </html>
-```
