@@ -70,17 +70,13 @@ const totalQuota = 120;
 const startDate = "2026-03-01"; // YYYY-MM-DD
 
 // DATA
-let entries = JSON.parse(localStorage.getItem("quotaEntries")) || [
+let entries = [
   {day:1,usage:4.2},
   {day:2,usage:5},
   {day:3,usage:8},
   {day:4,usage:7},
   {day:5,usage:1},
 ];
-
-function saveData(){
-  localStorage.setItem("quotaEntries", JSON.stringify(entries));
-}
 
 function getCurrentDay(){
   const start = new Date(startDate);
