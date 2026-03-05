@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Internet Quota</title>
+
+<style>
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui}
+
+body{
+background:#0b0f1a;
+color:white;
+padding:16px;
+}
+
+.container{
+max-width:520px;
+margin:auto;
+}
+
+.header{
+text-align:center;
+margin-bottom:16px;
+}
+
+.card{
+background:#141b2d;
+border-radius:16px;
+padding:18px;
+margin-bottom:14px;
+}
+
+.big{
+font-size:40px;
+font-weight:700;
+}
+
+.small{
+opacity:.7;
+font-size:13px;
+}
+
+.progress{
+height:10px;
+background:#1f2937;
+border-radius:20px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.bar{
+height:100%;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+width:0%;
+}
+
+.stats{
+display:flex;
+justify-content:space-between;
+margin-top:12px;
+font-size:14px;
+}
+
+.calendar{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:8px;
+}
+
+.day{
+background:#111827;
+border-radius:10px;
+padding:10px;
+text-align:center;
+font-size:13px;
+cursor:pointer;
+}
+
+.day span{
+display:block;
+margin-top:3px;
+font-weight:600;
+}
+
+.good{background:#0b2a1c;}
+.bad{background:#3b0a0a;}
+
+.prediction{
+margin-top:10px;
+font-size:13px;
+opacity:.8;
+text-align:center;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="header">
+<h2>Internet Quota</h2>
+</div>
+
+<div class="card">
+
+<div class="small">Remaining</div>
+<div class="big" id="remaining"></div>
+
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+
+<div class="stats">
+<div>Used: <span id="used"></span></div>
+<div>Safe/day: <span id="safe"></span></div>
+</div>
+
+<div class="prediction" id="prediction"></div>
+
+</div>
+
+<div class="calendar" id="calendar"></div>
+
+</div>
+
+<script>
+
+/* =====================
+CONFIG (EDIT HERE)
+===================== */
+
+const totalQuota = 140;   // GB
+const billingDays = 30;
+
+let usage = [
+4.2,
+3.8,
+5.1,
+2.7,
+6.4,
+3.3
+];
+
+/* =====================
+CALCULATIONS
+===================== */
+
+function render(){
+
+const used = usage.reduce((a,b)=>a+b,0);
+
+const remaining = totalQuota - used;
+
+const daysUsed = usage.length;
+
+const daysRemaining = billingDays - daysUsed;
+
+const safeDaily = remaining / daysRemaining;
+
+document.getElementById("remaining").innerText =
+remaining.toFixed(1)+" GB";
+
+document.getElementById("used").innerText =
+used.toFixed(1)+" GB";
+
+document.getElementById("safe").innerText =
+safeDaily.toFixed(2)+" GB";
+
+const percent = used/totalQuota*100;
+
+document.getElementById("bar").style.width =
+percent+"%";
+
+/* exhaustion prediction */
+
+const avg = used/daysUsed;
+
+const daysUntilEmpty = remaining/avg;
+
+const predictedDay = Math.floor(daysUsed+daysUntilEmpty);
+
+document.getElementById("prediction").innerText =
+"Quota may run out around day "+predictedDay;
+
+/* calendar */
+
+const cal=document.getElementById("calendar");
+
+cal.innerHTML="";
+
+for(let i=1;i<=billingDays;i++){
+
+const u = usage[i-1];
+
+const div=document.createElement("div");
+
+let cls="day";
+
+if(u){
+
+cls += u>safeDaily ? " bad":" good";
+
+}
+
+div.className=cls;
+
+div.innerHTML=`
+${i}
+<span>${u?u+"GB":""}</span>
+`;
+
+div.onclick=()=>{
+
+let val=prompt("Usage GB for day "+i,u||"");
+
+if(val!==null){
+
+usage[i-1]=parseFloat(val);
+
+}
+
+render();
+
+};
+
+cal.appendChild(div);
+
+}
+
+}
+
+render();
+
+</script>
+
+</body>
+</html>
