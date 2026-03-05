@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Internet Quota</title>
+<title>Quota Tracker</title>
 
 <style>
 
@@ -63,29 +63,40 @@ margin-top:12px;
 font-size:14px;
 }
 
-.calendar{
+.grid{
 display:grid;
-grid-template-columns:repeat(5,1fr);
-gap:8px;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
 }
 
 .day{
 background:#111827;
-border-radius:10px;
-padding:10px;
+border-radius:12px;
+padding:12px;
 text-align:center;
-font-size:13px;
-cursor:pointer;
 }
 
 .day span{
 display:block;
-margin-top:3px;
+margin-top:4px;
 font-weight:600;
 }
 
-.good{background:#0b2a1c;}
-.bad{background:#3b0a0a;}
+button{
+margin-top:12px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#2563eb;
+color:white;
+font-size:15px;
+cursor:pointer;
+}
+
+.locked{
+background:#444;
+}
 
 .prediction{
 margin-top:10px;
@@ -96,6 +107,7 @@ text-align:center;
 
 </style>
 </head>
+
 <body>
 
 <div class="container">
@@ -115,50 +127,71 @@ text-align:center;
 
 <div class="stats">
 <div>Used: <span id="used"></span></div>
-<div>Safe/day: <span id="safe"></span></div>
 </div>
 
 <div class="prediction" id="prediction"></div>
 
 </div>
 
-<div class="calendar" id="calendar"></div>
+<div class="grid" id="days"></div>
+
+<button id="addBtn" class="locked" onclick="addEntry()">🔒 Locked</button>
 
 </div>
 
 <script>
 
-/* =====================
-CONFIG (EDIT HERE)
-===================== */
+/* ========= CONFIG ========= */
 
-const totalQuota = 140;   // GB
-const billingDays = 30;
+const totalQuota = 120;
 
-let usage = [
-4.2,
-3.8,
-5.1,
-2.7,
-6.4,
-3.3
+/* PASSWORD FOR EDITING */
+const editPassword = "passit4689!";
+
+/* ========================== */
+
+let unlocked = false;
+
+let entries = [
+{day:1,usage:4.2},
+{day:2,usage:5},
+{day:3,usage:8}
+{day:4,usage:7}
 ];
 
-/* =====================
-CALCULATIONS
-===================== */
+/* ========================== */
+
+function unlock(){
+
+let p = prompt("Enter edit password");
+
+if(p===editPassword){
+
+unlocked=true;
+
+const btn=document.getElementById("addBtn");
+
+btn.classList.remove("locked");
+
+btn.innerText="Add Day";
+
+alert("Editing unlocked");
+
+}else{
+
+alert("Wrong password");
+
+}
+
+}
+
+/* ========================== */
 
 function render(){
 
-const used = usage.reduce((a,b)=>a+b,0);
+const used = entries.reduce((a,b)=>a+b.usage,0);
 
-const remaining = totalQuota - used;
-
-const daysUsed = usage.length;
-
-const daysRemaining = billingDays - daysUsed;
-
-const safeDaily = remaining / daysRemaining;
+const remaining = totalQuota-used;
 
 document.getElementById("remaining").innerText =
 remaining.toFixed(1)+" GB";
@@ -166,71 +199,75 @@ remaining.toFixed(1)+" GB";
 document.getElementById("used").innerText =
 used.toFixed(1)+" GB";
 
-document.getElementById("safe").innerText =
-safeDaily.toFixed(2)+" GB";
-
 const percent = used/totalQuota*100;
 
 document.getElementById("bar").style.width =
 percent+"%";
 
-/* exhaustion prediction */
+/* prediction */
 
-const avg = used/daysUsed;
+const avg = used/entries.length;
 
-const daysUntilEmpty = remaining/avg;
+const daysLeft = remaining/avg;
 
-const predictedDay = Math.floor(daysUsed+daysUntilEmpty);
+const predicted = Math.round(entries.length+daysLeft);
 
 document.getElementById("prediction").innerText =
-"Quota may run out around day "+predictedDay;
+"Estimated exhaustion day: "+predicted;
 
-/* calendar */
+/* render days */
 
-const cal=document.getElementById("calendar");
+const grid=document.getElementById("days");
 
-cal.innerHTML="";
+grid.innerHTML="";
 
-for(let i=1;i<=billingDays;i++){
-
-const u = usage[i-1];
+entries.forEach(e=>{
 
 const div=document.createElement("div");
 
-let cls="day";
-
-if(u){
-
-cls += u>safeDaily ? " bad":" good";
-
-}
-
-div.className=cls;
+div.className="day";
 
 div.innerHTML=`
-${i}
-<span>${u?u+"GB":""}</span>
+Day ${e.day}
+<span>${e.usage} GB</span>
 `;
 
-div.onclick=()=>{
+grid.appendChild(div);
 
-let val=prompt("Usage GB for day "+i,u||"");
-
-if(val!==null){
-
-usage[i-1]=parseFloat(val);
+});
 
 }
+
+/* ========================== */
+
+function addEntry(){
+
+if(!unlocked){
+
+unlock();
+
+return;
+
+}
+
+let day = prompt("Day number");
+
+if(day===null)return;
+
+let usage = prompt("Usage in GB");
+
+if(usage===null)return;
+
+entries.push({
+day:parseInt(day),
+usage:parseFloat(usage)
+});
 
 render();
 
-};
-
-cal.appendChild(div);
-
 }
 
-}
+/* ========================== */
 
 render();
 
