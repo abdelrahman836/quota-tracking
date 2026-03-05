@@ -83,7 +83,7 @@ font-weight:600;
 }
 
 button{
-margin-top:12px;
+margin-top:10px;
 width:100%;
 padding:12px;
 border:none;
@@ -94,8 +94,8 @@ font-size:15px;
 cursor:pointer;
 }
 
-.locked{
-background:#444;
+.unlock{
+background:#f59e0b;
 }
 
 .prediction{
@@ -135,46 +135,35 @@ text-align:center;
 
 <div class="grid" id="days"></div>
 
-<button id="addBtn" class="locked" onclick="addEntry()">🔒 Locked</button>
+<button class="unlock" onclick="unlock()">Unlock Editing</button>
+<button onclick="addEntry()">Add Day</button>
 
 </div>
 
 <script>
 
-/* ========= CONFIG ========= */
+/* ===== CONFIG ===== */
 
-const totalQuota = 120;
+const totalQuota = 140;
+const editPassword = "1234";
 
-/* PASSWORD FOR EDITING */
-const editPassword = "passit4689!";
-
-/* ========================== */
+/* ================== */
 
 let unlocked = false;
 
 let entries = [
 {day:1,usage:4.2},
-{day:2,usage:5},
-{day:3,usage:8}
-{day:4,usage:7}
+{day:2,usage:3.8},
+{day:3,usage:5.1}
 ];
-
-/* ========================== */
 
 function unlock(){
 
 let p = prompt("Enter edit password");
 
-if(p===editPassword){
+if(p === editPassword){
 
-unlocked=true;
-
-const btn=document.getElementById("addBtn");
-
-btn.classList.remove("locked");
-
-btn.innerText="Add Day";
-
+unlocked = true;
 alert("Editing unlocked");
 
 }else{
@@ -184,8 +173,6 @@ alert("Wrong password");
 }
 
 }
-
-/* ========================== */
 
 function render(){
 
@@ -227,7 +214,7 @@ const div=document.createElement("div");
 
 div.className="day";
 
-div.innerHTML=`
+div.innerHTML = `
 Day ${e.day}
 <span>${e.usage} GB</span>
 `;
@@ -238,13 +225,11 @@ grid.appendChild(div);
 
 }
 
-/* ========================== */
-
 function addEntry(){
 
 if(!unlocked){
 
-unlock();
+alert("Unlock editing first");
 
 return;
 
@@ -266,8 +251,6 @@ usage:parseFloat(usage)
 render();
 
 }
-
-/* ========================== */
 
 render();
 
