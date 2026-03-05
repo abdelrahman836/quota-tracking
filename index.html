@@ -20,11 +20,6 @@ max-width:520px;
 margin:auto;
 }
 
-.header{
-text-align:center;
-margin-bottom:16px;
-}
-
 .card{
 background:#141b2d;
 border-radius:16px;
@@ -56,13 +51,6 @@ background:linear-gradient(90deg,#22c55e,#4ade80);
 width:0%;
 }
 
-.stats{
-display:flex;
-justify-content:space-between;
-margin-top:12px;
-font-size:14px;
-}
-
 .grid{
 display:grid;
 grid-template-columns:repeat(2,1fr);
@@ -82,27 +70,48 @@ margin-top:4px;
 font-weight:600;
 }
 
-button{
-margin-top:10px;
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#2563eb;
-color:white;
-font-size:15px;
-cursor:pointer;
-}
-
-.unlock{
-background:#f59e0b;
-}
-
 .prediction{
 margin-top:10px;
 font-size:13px;
 opacity:.8;
 text-align:center;
+}
+
+/* hidden editor */
+
+.editor{
+margin-top:40px;
+padding-top:20px;
+border-top:1px solid #333;
+display:none;
+}
+
+input{
+width:100%;
+padding:10px;
+margin-top:6px;
+margin-bottom:8px;
+border-radius:8px;
+border:none;
+}
+
+button{
+width:100%;
+padding:10px;
+margin-top:6px;
+border:none;
+border-radius:10px;
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+.delete{
+background:#dc2626;
+}
+
+.unlock{
+background:#f59e0b;
 }
 
 </style>
@@ -111,10 +120,6 @@ text-align:center;
 <body>
 
 <div class="container">
-
-<div class="header">
-<h2>Internet Quota</h2>
-</div>
 
 <div class="card">
 
@@ -125,9 +130,7 @@ text-align:center;
 <div class="bar" id="bar"></div>
 </div>
 
-<div class="stats">
-<div>Used: <span id="used"></span></div>
-</div>
+<div class="small">Used: <span id="used"></span></div>
 
 <div class="prediction" id="prediction"></div>
 
@@ -135,8 +138,23 @@ text-align:center;
 
 <div class="grid" id="days"></div>
 
-<button class="unlock" onclick="unlock()">Unlock Editing</button>
-<button onclick="addEntry()">Add Day</button>
+<!-- hidden unlock -->
+<button class="unlock" onclick="unlock()">Admin</button>
+
+<!-- hidden editor panel -->
+<div class="editor" id="editor">
+
+<h3>Edit Usage</h3>
+
+<input id="dayInput" placeholder="Day number">
+<input id="usageInput" placeholder="Usage (GB)">
+
+<button onclick="addOrUpdate()">Add / Update Day</button>
+
+<input id="deleteDay" placeholder="Day to delete">
+<button class="delete" onclick="deleteDay()">Delete Day</button>
+
+</div>
 
 </div>
 
@@ -145,11 +163,9 @@ text-align:center;
 /* ===== CONFIG ===== */
 
 const totalQuota = 140;
-const editPassword = "1234";
+const password = "1234";
 
 /* ================== */
-
-let unlocked = false;
 
 let entries = [
 {day:1,usage:4.2},
@@ -157,24 +173,11 @@ let entries = [
 {day:3,usage:5.1}
 ];
 
-function unlock(){
-
-let p = prompt("Enter edit password");
-
-if(p === editPassword){
-
-unlocked = true;
-alert("Editing unlocked");
-
-}else{
-
-alert("Wrong password");
-
-}
-
-}
+/* render */
 
 function render(){
+
+entries.sort((a,b)=>a.day-b.day);
 
 const used = entries.reduce((a,b)=>a+b.usage,0);
 
@@ -186,23 +189,15 @@ remaining.toFixed(1)+" GB";
 document.getElementById("used").innerText =
 used.toFixed(1)+" GB";
 
-const percent = used/totalQuota*100;
-
 document.getElementById("bar").style.width =
-percent+"%";
-
-/* prediction */
+(used/totalQuota*100)+"%";
 
 const avg = used/entries.length;
 
-const daysLeft = remaining/avg;
-
-const predicted = Math.round(entries.length+daysLeft);
+const predicted = Math.round(entries.length + remaining/avg);
 
 document.getElementById("prediction").innerText =
 "Estimated exhaustion day: "+predicted;
-
-/* render days */
 
 const grid=document.getElementById("days");
 
@@ -214,7 +209,7 @@ const div=document.createElement("div");
 
 div.className="day";
 
-div.innerHTML = `
+div.innerHTML=`
 Day ${e.day}
 <span>${e.usage} GB</span>
 `;
@@ -225,28 +220,52 @@ grid.appendChild(div);
 
 }
 
-function addEntry(){
+/* unlock editor */
 
-if(!unlocked){
+function unlock(){
 
-alert("Unlock editing first");
+let p = prompt("Password");
 
-return;
+if(p===password){
+
+document.getElementById("editor").style.display="block";
 
 }
 
-let day = prompt("Day number");
+}
 
-if(day===null)return;
+/* add or update */
 
-let usage = prompt("Usage in GB");
+function addOrUpdate(){
 
-if(usage===null)return;
+let day=parseInt(document.getElementById("dayInput").value);
+let usage=parseFloat(document.getElementById("usageInput").value);
 
-entries.push({
-day:parseInt(day),
-usage:parseFloat(usage)
-});
+if(!day||!usage)return;
+
+let existing=entries.find(e=>e.day===day);
+
+if(existing){
+
+existing.usage=usage;
+
+}else{
+
+entries.push({day,usage});
+
+}
+
+render();
+
+}
+
+/* delete */
+
+function deleteDay(){
+
+let d=parseInt(document.getElementById("deleteDay").value);
+
+entries=entries.filter(e=>e.day!==d);
 
 render();
 
