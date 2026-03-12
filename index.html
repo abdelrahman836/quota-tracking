@@ -65,62 +65,73 @@ Remaining Quota
 </div>
 
 <script>
+
 // CONFIG
 const totalQuota = 120;
-const startDate = "2026-03-12"; // YYYY-MM-DD
+const startDate = "2026-03-12";
 
 // DATA
 let entries = [
-  {day:12,usage:0.1},
-  {day:13,usage:0},
+  {date:"2026-03-12",usage:0.1},
+  {date:"2026-03-13",usage:0}
 ];
 
-function getCurrentDay(){
-  const start = new Date(startDate);
-  const today = new Date();
-  const diff = Math.floor((today - start)/(1000*60*60*24)) + 1;
-  return diff > 0 ? diff : 1;
-}
-
 function render(){
-  entries.sort((a,b)=>a.day-b.day);
+
+  entries.sort((a,b)=>new Date(a.date)-new Date(b.date));
 
   const used = entries.reduce((a,b)=>a+b.usage,0);
   const remaining = totalQuota - used;
 
   document.getElementById("remaining").innerText = remaining.toFixed(1)+" GB";
 
-  // display start date
   const start = new Date(startDate);
-  document.getElementById("startDateDisplay").innerText = "Quota Start: " + start.toLocaleDateString();
+  document.getElementById("startDateDisplay").innerText =
+  "Quota Start: " + start.toLocaleDateString();
 
   document.getElementById("used").innerText = used.toFixed(1)+" GB";
   document.getElementById("bar").style.width = (used/totalQuota*100)+"%";
 
-  const avg = used/entries.length;
-  const predicted = Math.round(entries.length + remaining/avg);
-  document.getElementById("prediction").innerText = "Estimated exhaustion day: "+predicted;
+  const avg = entries.length ? used/entries.length : 0;
+
+  const predicted = avg>0
+    ? Math.round(entries.length + remaining/avg)
+    : "N/A";
+
+  document.getElementById("prediction").innerText =
+  "Estimated exhaustion day: "+predicted;
 
   const grid=document.getElementById("days");
   grid.innerHTML="";
-  const currentDay = getCurrentDay();
+
+  const today = new Date();
 
   entries.forEach(e=>{
-    if(e.day <= currentDay){
+
+    const entryDate = new Date(e.date);
+
+    if(entryDate <= today){
+
       const div = document.createElement("div");
-      div.className = "day";
+      div.className="day";
+
       div.innerHTML = `
       <svg viewBox="0 0 24 24">
         <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 18H5V10h14v12zM5 8V6h14v2H5z"/>
       </svg>
-      <div class="label">Day ${e.day}</div>
+      <div class="label">${entryDate.toLocaleDateString()}</div>
       <div class="value">${e.usage} GB</div>`;
+
       grid.appendChild(div);
+
     }
+
   });
+
 }
 
 render();
+
 </script>
 </body>
 </html>
