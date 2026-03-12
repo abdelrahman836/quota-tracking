@@ -4,60 +4,144 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quota Tracker</title>
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto;}
-body{background:linear-gradient(160deg,#0f172a,#020617);color:white;padding:20px;min-height:100vh;}
-.container{max-width:520px;margin:auto;}
+
+body{
+background:linear-gradient(160deg,#0f172a,#020617);
+color:white;
+padding:20px;
+min-height:100vh;
+}
+
+.container{
+max-width:520px;
+margin:auto;
+}
+
 .card{
-  background:rgba(255,255,255,.05);
-  border-radius:22px;
-  padding:24px;
-  border:1px solid rgba(255,255,255,.08);
-  backdrop-filter:blur(12px);
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
-  margin-bottom:20px;
+background:rgba(255,255,255,.05);
+border-radius:22px;
+padding:24px;
+border:1px solid rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+box-shadow:0 20px 40px rgba(0,0,0,.35);
+margin-bottom:20px;
 }
-.header{display:flex;align-items:center;gap:10px;font-size:14px;opacity:.8;margin-bottom:8px;}
-.big{font-size:46px;font-weight:700;letter-spacing:-1px;}
-.subheader{font-size:13px;opacity:.7;margin-top:4px;}
-.progress{height:12px;background:rgba(255,255,255,.08);border-radius:30px;overflow:hidden;margin-top:14px;}
-.bar{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);width:0%;}
-.stats{margin-top:10px;font-size:14px;opacity:.8;}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:10px;}
+
+.header{
+display:flex;
+align-items:center;
+gap:10px;
+font-size:14px;
+opacity:.8;
+margin-bottom:8px;
+}
+
+.big{
+font-size:46px;
+font-weight:700;
+letter-spacing:-1px;
+}
+
+.subheader{
+font-size:13px;
+opacity:.7;
+margin-top:4px;
+}
+
+.progress{
+height:12px;
+background:rgba(255,255,255,.08);
+border-radius:30px;
+overflow:hidden;
+margin-top:14px;
+}
+
+.bar{
+height:100%;
+background:linear-gradient(90deg,#22c55e,#4ade80);
+width:0%;
+}
+
+.stats{
+margin-top:10px;
+font-size:14px;
+opacity:.8;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+gap:10px;
+}
+
 .day{
-  background:rgba(255,255,255,.06);
-  border-radius:14px;
-  padding:10px 8px;
-  text-align:center;
-  border:1px solid rgba(255,255,255,.08);
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  font-size:14px;
-  min-height:80px;
+background:rgba(255,255,255,.06);
+border-radius:14px;
+padding:10px 8px;
+text-align:center;
+border:1px solid rgba(255,255,255,.08);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+font-size:14px;
+min-height:80px;
 }
-.day svg{width:20px;height:20px;margin-bottom:4px;fill:#fff;opacity:.8;}
-.day .label{font-size:12px;opacity:.7;}
-.day .value{font-size:16px;font-weight:600;margin-top:2px;}
-.prediction{margin-top:12px;font-size:13px;opacity:.7;text-align:center;}
+
+.day svg{
+width:20px;
+height:20px;
+margin-bottom:4px;
+fill:#fff;
+opacity:.8;
+}
+
+.day .label{
+font-size:12px;
+opacity:.7;
+}
+
+.day .value{
+font-size:16px;
+font-weight:600;
+margin-top:2px;
+}
+
+.prediction{
+margin-top:12px;
+font-size:13px;
+opacity:.7;
+text-align:center;
+}
 </style>
 </head>
+
 <body>
+
 <div class="container">
 
 <div class="card">
+
 <div class="header">
-<svg width="20" height="20" fill="white" opacity=".8" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.68.09-1.34.23-1.98L12 12l7.77-3.98c.14.64.23 1.3.23 1.98 0 4.41-3.59 8-8 8z"/></svg>
+<svg width="20" height="20" fill="white" opacity=".8" viewBox="0 0 24 24">
+<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8 0-.68.09-1.34.23-1.98L12 12l7.77-3.98c.14.64.23 1.3.23 1.98 0 4.41-3.59 8-8 8z"/>
+</svg>
 Remaining Quota
 </div>
 
 <div class="big" id="remaining"></div>
 <div class="subheader" id="startDateDisplay"></div>
 
-<div class="progress"><div class="bar" id="bar"></div></div>
+<div class="progress">
+<div class="bar" id="bar"></div>
+</div>
+
 <div class="stats">📊 Used: <span id="used"></span></div>
 <div class="prediction" id="prediction"></div>
+
 </div>
 
 <div class="grid" id="days"></div>
@@ -72,62 +156,63 @@ const startDate = "2026-03-12";
 
 // DATA
 let entries = [
-  {date:"2026-03-12",usage:0.1},
-  {date:"2026-03-13",usage:0},
+{date:"2026-03-12",usage:1.5},
+{date:"2026-03-13",usage:0},
 ];
 
 function render(){
 
-  entries.sort((a,b)=>new Date(a.date)-new Date(b.date));
+const quotaStart = new Date(startDate);
 
-  const used = entries.reduce((a,b)=>a+b.usage,0);
-  const remaining = totalQuota - used;
+// sort entries by date
+entries.sort((a,b)=>new Date(a.date)-new Date(b.date));
 
-  document.getElementById("remaining").innerText = remaining.toFixed(1)+" GB";
+// calculate usage
+const used = entries.reduce((a,b)=>a+b.usage,0);
+const remaining = totalQuota-used;
 
-  const start = new Date(startDate);
-  document.getElementById("startDateDisplay").innerText =
-  "Quota Start: " + start.toLocaleDateString();
+document.getElementById("remaining").innerText = remaining.toFixed(1)+" GB";
+document.getElementById("used").innerText = used.toFixed(1)+" GB";
+document.getElementById("bar").style.width = (used/totalQuota*100)+"%";
 
-  document.getElementById("used").innerText = used.toFixed(1)+" GB";
-  document.getElementById("bar").style.width = (used/totalQuota*100)+"%";
+document.getElementById("startDateDisplay").innerText =
+"Quota Start: "+quotaStart.toLocaleDateString();
 
-  const avg = entries.length ? used/entries.length : 0;
+// prediction
+const avg = entries.length ? used/entries.length : 0;
 
-  const predicted = avg>0
-    ? Math.round(entries.length + remaining/avg)
-    : "N/A";
+let predicted="N/A";
+if(avg>0){
+predicted=Math.round(entries.length + remaining/avg);
+}
 
-  document.getElementById("prediction").innerText =
-  "Estimated exhaustion day: "+predicted;
+document.getElementById("prediction").innerText =
+"Estimated exhaustion day: "+predicted;
 
-  const grid=document.getElementById("days");
-  grid.innerHTML="";
-
+// render days
 const grid=document.getElementById("days");
 grid.innerHTML="";
 
-const quotaStart = new Date(startDate);
-
 entries.forEach(e=>{
 
-  const entryDate = new Date(e.date);
+const entryDate = new Date(e.date);
 
-  if(entryDate >= quotaStart){
+if(entryDate >= quotaStart){
 
-    const div = document.createElement("div");
-    div.className="day";
+const div=document.createElement("div");
+div.className="day";
 
-    div.innerHTML = `
-    <svg viewBox="0 0 24 24">
-      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 18H5V10h14v12zM5 8V6h14v2H5z"/>
-    </svg>
-    <div class="label">${entryDate.toLocaleDateString()}</div>
-    <div class="value">${e.usage} GB</div>`;
+div.innerHTML=`
+<svg viewBox="0 0 24 24">
+<path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 18H5V10h14v12zM5 8V6h14v2H5z"/>
+</svg>
+<div class="label">${entryDate.toLocaleDateString()}</div>
+<div class="value">${e.usage} GB</div>
+`;
 
-    grid.appendChild(div);
+grid.appendChild(div);
 
-  }
+}
 
 });
 
@@ -136,5 +221,6 @@ entries.forEach(e=>{
 render();
 
 </script>
+
 </body>
 </html>
