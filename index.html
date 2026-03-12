@@ -104,29 +104,32 @@ function render(){
   const grid=document.getElementById("days");
   grid.innerHTML="";
 
-  const today = new Date();
+const grid=document.getElementById("days");
+grid.innerHTML="";
 
-  entries.forEach(e=>{
+const quotaStart = new Date(startDate);
 
-    const entryDate = new Date(e.date);
+entries.forEach(e=>{
 
-    if(entryDate >= today){
+  const entryDate = new Date(e.date);
 
-      const div = document.createElement("div");
-      div.className="day";
+  if(entryDate >= quotaStart){
 
-      div.innerHTML = `
-      <svg viewBox="0 0 24 24">
-        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 18H5V10h14v12zM5 8V6h14v2H5z"/>
-      </svg>
-      <div class="label">${entryDate.toLocaleDateString()}</div>
-      <div class="value">${e.usage} GB</div>`;
+    const div = document.createElement("div");
+    div.className="day";
 
-      grid.appendChild(div);
+    div.innerHTML = `
+    <svg viewBox="0 0 24 24">
+      <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 18H5V10h14v12zM5 8V6h14v2H5z"/>
+    </svg>
+    <div class="label">${entryDate.toLocaleDateString()}</div>
+    <div class="value">${e.usage} GB</div>`;
 
-    }
+    grid.appendChild(div);
 
-  });
+  }
+
+});
 
 }
 
