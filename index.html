@@ -194,7 +194,7 @@ const avg = entries.length ? used/entries.length : 0;
 
 let predicted="N/A";
 if(avg>0){
-predicted=Math.round(entries.length + remaining/avg);
+predicted=Math.round(remaining/avg);
 }
 
 document.getElementById("prediction").innerText =
