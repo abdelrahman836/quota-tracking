@@ -189,17 +189,6 @@ document.getElementById("bar").style.width = (used/totalQuota*100)+"%";
 document.getElementById("startDateDisplay").innerText =
 "Quota Start: "+quotaStart.toLocaleDateString();
 
-// prediction
-const avg = entries.length ? used/entries.length : 0;
-
-let predicted="N/A";
-if(avg>0){
-predicted=Math.round(remaining/avg);
-}
-
-document.getElementById("prediction").innerText =
-"Estimated exhaustion day: "+predicted;
-
 // render days
 const grid=document.getElementById("days");
 grid.innerHTML="";
